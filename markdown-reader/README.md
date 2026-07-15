@@ -25,6 +25,35 @@ A distraction-free reading view for Markdown files: a fixed-width, centered read
 | `markdown-reader.tocDefaultCollapsed` | `false`  | Whether the Table of Contents starts collapsed.                |
 | `markdown-reader.updateMode`          | `"live"` | `"live"` updates as you type; `"onSave"` updates on save only. |
 
+## Install for Production Use
+
+The extension isn't published to the Marketplace, so install it locally from a packaged `.vsix`:
+
+1. Install dependencies and package the extension:
+
+   ```powershell
+   npm install
+   npm run package
+   ```
+
+   This runs the type-check and tests, produces a production build, and creates `markdown-reader-0.0.1.vsix` in this folder.
+
+2. Install the `.vsix` into VS Code, either:
+
+   - **Command line:**
+
+     ```powershell
+     code --install-extension markdown-reader-0.0.1.vsix
+     ```
+
+   - **UI:** Open the Extensions view, click the `...` menu at the top, choose **Install from VSIX...**, and select the generated file.
+
+3. Reload VS Code if prompted. The extension activates automatically the first time you run its command, no restart required otherwise.
+
+4. Verify it's installed: open a Markdown file and confirm the book icon appears in the editor title bar, or run **Markdown Reader: Open Preview** from the Command Palette.
+
+To update after making changes, bump `version` in `package.json`, rerun `npm run package`, then reinstall the new `.vsix` (VS Code replaces the previous version).
+
 ## Development
 
 ```powershell

@@ -73,7 +73,7 @@
     "watch": "node esbuild.js --watch",
     "check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
     "test": "tsc -p tsconfig.test.json && node --test out-test/test/markdown.test.js",
-    "package": "npm run check && npm run test && node esbuild.js --production && vsce package"
+    "package": "npm run check && npm run test && node esbuild.js --production && vsce package --allow-missing-repository"
   },
   "dependencies": {
     "highlight.js": "^11.10.0",
