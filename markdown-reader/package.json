@@ -1,0 +1,92 @@
+{
+  "name": "markdown-reader",
+  "displayName": "Markdown Reader",
+  "description": "A distraction-free, fixed-width Markdown reading view with a collapsible table of contents.",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "mpsingh17",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "markdown-reader.open",
+        "title": "Markdown Reader: Open Preview",
+        "icon": "$(book)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "markdown-reader.open",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Markdown Reader",
+      "properties": {
+        "markdown-reader.contentWidth": {
+          "type": "number",
+          "default": 552,
+          "minimum": 320,
+          "maximum": 1200,
+          "description": "Maximum width, in pixels, of the reading column.",
+          "scope": "resource"
+        },
+        "markdown-reader.tocDefaultCollapsed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the table of contents starts collapsed when there is no remembered state.",
+          "scope": "resource"
+        },
+        "markdown-reader.updateMode": {
+          "type": "string",
+          "enum": [
+            "live",
+            "onSave"
+          ],
+          "default": "live",
+          "description": "Whether the preview updates as you type (debounced) or only when you save.",
+          "scope": "resource"
+        },
+        "markdown-reader.fontSize": {
+          "type": "number",
+          "default": 16,
+          "minimum": 12,
+          "maximum": 32,
+          "description": "Base font size, in pixels, of the reading column.",
+          "scope": "resource"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run check && node esbuild.js --production",
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test out-test/test/markdown.test.js",
+    "package": "npm run check && npm run test && node esbuild.js --production && vsce package"
+  },
+  "dependencies": {
+    "highlight.js": "^11.10.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-task-lists": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.4"
+  }
+}

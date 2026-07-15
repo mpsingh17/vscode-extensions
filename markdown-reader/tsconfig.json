@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["node", "vscode"]
+  },
+  "include": [
+    "src/extension.ts",
+    "src/readerPanel.ts",
+    "src/markdown.ts",
+    "src/shared/**/*.ts"
+  ]
+}
