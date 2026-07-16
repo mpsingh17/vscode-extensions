@@ -7,14 +7,14 @@ A distraction-free reading view for Markdown files: a fixed-width, centered read
 - **Fixed-width reading column** (default 552px, configurable) for comfortable long-form reading.
 - **Collapsible Table of Contents** with heading indentation, click-to-navigate, and scroll-spy highlighting of the current section.
 - **Live preview** that updates as you type (debounced) or only on save, without losing your scroll position.
-- Renders headings, lists, task lists, tables, blockquotes, syntax-highlighted code blocks, images, and links, all themed to match your VS Code color theme.
+- Renders headings, lists, task lists, tables, blockquotes, syntax-highlighted code blocks, Mermaid diagrams, images, and links, all themed to match your VS Code color theme.
 - Untrusted Markdown content is sanitized: inline HTML doesn't execute, and a strict Content Security Policy is enforced.
 
 ## Usage
 
 1. Open a Markdown (`.md`) file.
 2. Run **Markdown Reader: Open Preview** from the Command Palette, or click the book icon in the editor title bar.
-3. The reader opens beside your editor. Click a heading in the Table of Contents to jump to it, or use the toggle to collapse the ToC.
+3. The reader opens beside your editor on the right. Click a heading in the Table of Contents to jump to it, or use the toggle to collapse the ToC. Mermaid fenced blocks render inline with VS Code-aligned styling when the webview can load Mermaid from the CDN.
 
 ## Settings
 

@@ -27,6 +27,11 @@ function escapeHtml(value: string): string {
 }
 
 function highlightFence(code: string, lang: string): string {
+  const normalizedLang = lang ? lang.toLowerCase() : "";
+  if (normalizedLang === "mermaid") {
+    return `<div class="mermaid">${escapeHtml(code)}</div>`;
+  }
+
   const language = lang && hljs.getLanguage(lang) ? lang : undefined;
   const highlighted = language
     ? hljs.highlight(code, { language, ignoreIllegals: true }).value

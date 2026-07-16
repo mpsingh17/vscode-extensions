@@ -5,6 +5,53 @@ import type {
   WebviewMessage,
 } from "../shared/messages";
 
+interface MermaidApi {
+  initialize?: (options: Record<string, unknown>) => void;
+  run?: (options: { nodes: NodeListOf<HTMLElement> | ArrayLike<HTMLElement> }) => void;
+}
+
+interface MermaidWindow extends Window {
+  mermaid?: MermaidApi;
+}
+
+function readThemeColor(name: string, fallback: string): string {
+  const value = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return value || fallback;
+}
+
+function getMermaidThemeConfig(): Record<string, unknown> {
+  return {
+    startOnLoad: false,
+    // Keep Mermaid strict so diagram source cannot run scripts in the webview.
+    securityLevel: "strict",
+    theme: "base",
+    themeVariables: {
+      background: "transparent",
+      primaryColor: readThemeColor("--vscode-button-background", "#007acc"),
+      primaryTextColor: readThemeColor("--vscode-button-foreground", "#ffffff"),
+      lineColor: readThemeColor("--vscode-panel-border", "#7b7b7b"),
+      secondaryColor: readThemeColor("--vscode-editorWidget-background", "#f3f3f3"),
+      tertiaryColor: readThemeColor("--vscode-sideBar-background", "#f8f8f8"),
+      textColor: readThemeColor("--vscode-editor-foreground", "#1f1f1f"),
+      mainBkg: readThemeColor("--vscode-editor-background", "#ffffff"),
+      clusterBkg: readThemeColor("--vscode-sideBar-background", "#f8f8f8"),
+      clusterBorder: readThemeColor("--vscode-panel-border", "#a0a0a0"),
+      edgeLabelBackground: readThemeColor("--vscode-editor-background", "#ffffff"),
+      fontFamily: readThemeColor(
+        "--vscode-editor-font-family",
+        "system-ui, -apple-system, Segoe UI, sans-serif",
+      ),
+    },
+    flowchart: {
+      useMaxWidth: true,
+      curve: "basis",
+    },
+  };
+}
+
 declare function acquireVsCodeApi(): {
   postMessage(message: WebviewMessage): void;
   getState(): unknown;
@@ -80,6 +127,7 @@ declare function acquireVsCodeApi(): {
     } else {
       contentEl.innerHTML = payload.html;
       wrapWideTables();
+      renderMermaidBlocks();
     }
 
     headings = payload.headings;
@@ -96,6 +144,22 @@ declare function acquireVsCodeApi(): {
       : Math.min(previousScrollTop, readerEl.scrollHeight);
     activeSlug = null;
     updateActiveHeading();
+  }
+
+  function renderMermaidBlocks(): void {
+    const mermaid = (window as MermaidWindow).mermaid;
+    if (!mermaid?.run || !mermaid.initialize) {
+      window.setTimeout(renderMermaidBlocks, 100);
+      return;
+    }
+
+    const nodes = contentEl.querySelectorAll<HTMLElement>(".mermaid");
+    if (nodes.length === 0) {
+      return;
+    }
+
+    mermaid.initialize(getMermaidThemeConfig());
+    mermaid.run({ nodes });
   }
 
   function wrapWideTables(): void {
