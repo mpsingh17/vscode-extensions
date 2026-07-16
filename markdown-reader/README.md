@@ -61,6 +61,13 @@ npm install
 npm run check    # type-check
 npm test          # parser unit tests
 npm run compile   # bundle extension + webview
+npm run test:host # compile then open Extension Development Host
 ```
 
-Press `F5` in VS Code to launch an Extension Development Host and try it out.
+Press `F5` in VS Code to launch an Extension Development Host and try it out. If VS Code asks you to select a debugger, open the `markdown-reader` folder directly (not just the repo root) or run `npm run test:host`.
+
+To verify the Development Host is running this workspace copy (not an installed `.vsix`):
+
+1. Run `npm run test:host` from this folder. The script prints the exact `extensionDevelopmentPath` before launching VS Code.
+2. In the Development Host window, run **Developer: Show Running Extensions** and confirm Markdown Reader points to this folder path.
+3. Open **Output** and select **Markdown Reader (Dev)**. You should see activation lines including `extensionPath=.../vscode-extensions/markdown-reader`.

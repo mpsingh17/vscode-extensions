@@ -71,6 +71,8 @@
     "vscode:prepublish": "npm run check && node esbuild.js --production",
     "compile": "node esbuild.js",
     "watch": "node esbuild.js --watch",
+    "devhost": "echo [markdown-reader] extensionDevelopmentPath=%cd% && code --new-window --disable-extensions --extensionDevelopmentPath=\"%cd%\"",
+    "test:host": "npm run compile && npm run devhost",
     "check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
     "test": "tsc -p tsconfig.test.json && node --test out-test/test/markdown.test.js",
     "package": "npm run check && npm run test && node esbuild.js --production && vsce package --allow-missing-repository"
