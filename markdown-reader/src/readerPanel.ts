@@ -11,6 +11,7 @@ import type {
 
 const TOC_COLLAPSED_KEY = "markdown-reader.tocCollapsed";
 const LIVE_DEBOUNCE_MS = 300;
+const READER_VIEW_COLUMN = vscode.ViewColumn.Beside;
 
 interface CachedModel {
   uri: vscode.Uri;
@@ -64,14 +65,14 @@ export class ReaderPanel implements vscode.Disposable {
 
   private ensurePanel(): void {
     if (this.panel) {
-      this.panel.reveal(vscode.ViewColumn.Beside, true);
+      this.panel.reveal(this.panel.viewColumn ?? READER_VIEW_COLUMN, true);
       return;
     }
 
     const panel = vscode.window.createWebviewPanel(
       "markdownReader",
       "Markdown Reader",
-      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+      { viewColumn: READER_VIEW_COLUMN, preserveFocus: true },
       {
         enableScripts: true,
         enableForms: false,
@@ -126,6 +127,9 @@ export class ReaderPanel implements vscode.Disposable {
     const cssUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "dist", "reader.css"),
     );
+    const mermaidUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "dist", "mermaid.min.js"),
+    );
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js"),
     );
@@ -156,6 +160,7 @@ export class ReaderPanel implements vscode.Disposable {
     <div id="content" class="content"></div>
   </main>
 </div>
+<script nonce="${nonce}" src="${mermaidUri}"></script>
 <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;

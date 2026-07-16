@@ -57,6 +57,12 @@ test("escapes unknown fence languages instead of executing markup", () => {
   assert.ok(!model.html.includes("<b>bold</b>"));
 });
 
+test("renders Mermaid code fences as mermaid blocks", () => {
+  const model = renderMarkdown("```mermaid\ngraph TD\nA-->B\n```");
+  assert.match(model.html, /class="mermaid"/);
+  assert.ok(model.html.includes("graph TD"));
+});
+
 test("rejects unsupported image sources via the resolver callback", () => {
   const model = renderMarkdown("![alt](/etc/passwd)", {
     resolveImage: () => null,

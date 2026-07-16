@@ -5,6 +5,56 @@ import type {
   WebviewMessage,
 } from "../shared/messages";
 
+interface MermaidApi {
+  initialize?: (options: Record<string, unknown>) => void;
+  run?: (options: { nodes: NodeListOf<HTMLElement> | ArrayLike<HTMLElement> }) => void;
+}
+
+interface MermaidWindow extends Window {
+  mermaid?: MermaidApi;
+}
+
+const MERMAID_INIT_RETRY_MS = 100;
+const MERMAID_INIT_MAX_RETRIES = 30;
+
+function readThemeColor(name: string, fallback: string): string {
+  const value = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return value || fallback;
+}
+
+function getMermaidThemeConfig(): Record<string, unknown> {
+  return {
+    startOnLoad: false,
+    // Keep Mermaid strict so diagram source cannot run scripts in the webview.
+    securityLevel: "strict",
+    theme: "base",
+    themeVariables: {
+      background: "transparent",
+      primaryColor: readThemeColor("--vscode-button-background", "#007acc"),
+      primaryTextColor: readThemeColor("--vscode-button-foreground", "#ffffff"),
+      lineColor: readThemeColor("--vscode-panel-border", "#7b7b7b"),
+      secondaryColor: readThemeColor("--vscode-editorWidget-background", "#f3f3f3"),
+      tertiaryColor: readThemeColor("--vscode-sideBar-background", "#f8f8f8"),
+      textColor: readThemeColor("--vscode-editor-foreground", "#1f1f1f"),
+      mainBkg: readThemeColor("--vscode-editor-background", "#ffffff"),
+      clusterBkg: readThemeColor("--vscode-sideBar-background", "#f8f8f8"),
+      clusterBorder: readThemeColor("--vscode-panel-border", "#a0a0a0"),
+      edgeLabelBackground: readThemeColor("--vscode-editor-background", "#ffffff"),
+      fontFamily: readThemeColor(
+        "--vscode-editor-font-family",
+        "system-ui, -apple-system, Segoe UI, sans-serif",
+      ),
+    },
+    flowchart: {
+      useMaxWidth: true,
+      curve: "basis",
+    },
+  };
+}
+
 declare function acquireVsCodeApi(): {
   postMessage(message: WebviewMessage): void;
   getState(): unknown;
@@ -26,6 +76,7 @@ declare function acquireVsCodeApi(): {
   let activeSlug: string | null = null;
   let userToggledToc = false;
   let scrollTicking = false;
+  let mermaidRetryTimer: number | undefined;
 
   function setTocCollapsed(collapsed: boolean): void {
     appEl.classList.toggle("toc-collapsed", collapsed);
@@ -44,6 +95,7 @@ declare function acquireVsCodeApi(): {
   });
 
   function renderState(state: "noActiveFile" | "nonMarkdown"): void {
+    cancelMermaidRetry();
     appEl.dataset.state = state;
     tocListEl.innerHTML = "";
     headings = [];
@@ -59,6 +111,7 @@ declare function acquireVsCodeApi(): {
   }
 
   function renderPayload(payload: RenderPayload): void {
+    cancelMermaidRetry();
     appEl.dataset.state = "ready";
     document.documentElement.style.setProperty(
       "--content-width",
@@ -80,6 +133,7 @@ declare function acquireVsCodeApi(): {
     } else {
       contentEl.innerHTML = payload.html;
       wrapWideTables();
+      renderMermaidBlocks(0);
     }
 
     headings = payload.headings;
@@ -96,6 +150,36 @@ declare function acquireVsCodeApi(): {
       : Math.min(previousScrollTop, readerEl.scrollHeight);
     activeSlug = null;
     updateActiveHeading();
+  }
+
+  function cancelMermaidRetry(): void {
+    if (mermaidRetryTimer !== undefined) {
+      clearTimeout(mermaidRetryTimer);
+      mermaidRetryTimer = undefined;
+    }
+  }
+
+  function renderMermaidBlocks(retryCount: number): void {
+    const nodes = contentEl.querySelectorAll<HTMLElement>(".mermaid");
+    if (nodes.length === 0) {
+      return;
+    }
+
+    const mermaid = (window as MermaidWindow).mermaid;
+    if (!mermaid?.run || !mermaid.initialize) {
+      if (retryCount >= MERMAID_INIT_MAX_RETRIES) {
+        console.warn("Mermaid did not initialize in the webview; skipping render.");
+        return;
+      }
+      mermaidRetryTimer = window.setTimeout(
+        () => renderMermaidBlocks(retryCount + 1),
+        MERMAID_INIT_RETRY_MS,
+      );
+      return;
+    }
+
+    mermaid.initialize(getMermaidThemeConfig());
+    mermaid.run({ nodes });
   }
 
   function wrapWideTables(): void {

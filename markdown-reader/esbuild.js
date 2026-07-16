@@ -5,7 +5,7 @@ const path = require("path");
 const production = process.argv.includes("--production");
 const watch = process.argv.includes("--watch");
 
-/** Copies the static stylesheet into dist/ after every webview build. */
+/** Copies static webview assets into dist/ after every webview build. */
 const copyAssetsPlugin = {
   name: "copy-assets",
   setup(build) {
@@ -14,6 +14,10 @@ const copyAssetsPlugin = {
       fs.copyFileSync(
         path.join("media", "reader.css"),
         path.join("dist", "reader.css"),
+      );
+      fs.copyFileSync(
+        path.join("node_modules", "mermaid", "dist", "mermaid.min.js"),
+        path.join("dist", "mermaid.min.js"),
       );
     });
   },
