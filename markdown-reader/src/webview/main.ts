@@ -14,6 +14,9 @@ interface MermaidWindow extends Window {
   mermaid?: MermaidApi;
 }
 
+const MERMAID_INIT_RETRY_MS = 100;
+const MERMAID_INIT_MAX_RETRIES = 30;
+
 function readThemeColor(name: string, fallback: string): string {
   const value = window
     .getComputedStyle(document.documentElement)
@@ -73,6 +76,7 @@ declare function acquireVsCodeApi(): {
   let activeSlug: string | null = null;
   let userToggledToc = false;
   let scrollTicking = false;
+  let mermaidRetryTimer: number | undefined;
 
   function setTocCollapsed(collapsed: boolean): void {
     appEl.classList.toggle("toc-collapsed", collapsed);
@@ -91,6 +95,7 @@ declare function acquireVsCodeApi(): {
   });
 
   function renderState(state: "noActiveFile" | "nonMarkdown"): void {
+    cancelMermaidRetry();
     appEl.dataset.state = state;
     tocListEl.innerHTML = "";
     headings = [];
@@ -106,6 +111,7 @@ declare function acquireVsCodeApi(): {
   }
 
   function renderPayload(payload: RenderPayload): void {
+    cancelMermaidRetry();
     appEl.dataset.state = "ready";
     document.documentElement.style.setProperty(
       "--content-width",
@@ -127,7 +133,7 @@ declare function acquireVsCodeApi(): {
     } else {
       contentEl.innerHTML = payload.html;
       wrapWideTables();
-      renderMermaidBlocks();
+      renderMermaidBlocks(0);
     }
 
     headings = payload.headings;
@@ -146,15 +152,29 @@ declare function acquireVsCodeApi(): {
     updateActiveHeading();
   }
 
-  function renderMermaidBlocks(): void {
-    const mermaid = (window as MermaidWindow).mermaid;
-    if (!mermaid?.run || !mermaid.initialize) {
-      window.setTimeout(renderMermaidBlocks, 100);
+  function cancelMermaidRetry(): void {
+    if (mermaidRetryTimer !== undefined) {
+      clearTimeout(mermaidRetryTimer);
+      mermaidRetryTimer = undefined;
+    }
+  }
+
+  function renderMermaidBlocks(retryCount: number): void {
+    const nodes = contentEl.querySelectorAll<HTMLElement>(".mermaid");
+    if (nodes.length === 0) {
       return;
     }
 
-    const nodes = contentEl.querySelectorAll<HTMLElement>(".mermaid");
-    if (nodes.length === 0) {
+    const mermaid = (window as MermaidWindow).mermaid;
+    if (!mermaid?.run || !mermaid.initialize) {
+      if (retryCount >= MERMAID_INIT_MAX_RETRIES) {
+        console.warn("Mermaid did not initialize in the webview; skipping render.");
+        return;
+      }
+      mermaidRetryTimer = window.setTimeout(
+        () => renderMermaidBlocks(retryCount + 1),
+        MERMAID_INIT_RETRY_MS,
+      );
       return;
     }
 

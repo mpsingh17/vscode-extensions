@@ -14,7 +14,7 @@ A distraction-free reading view for Markdown files: a fixed-width, centered read
 
 1. Open a Markdown (`.md`) file.
 2. Run **Markdown Reader: Open Preview** from the Command Palette, or click the book icon in the editor title bar.
-3. The reader opens beside your editor on the right. Click a heading in the Table of Contents to jump to it, or use the toggle to collapse the ToC. Mermaid fenced blocks render inline with VS Code-aligned styling when the webview can load Mermaid from the CDN.
+3. The reader opens beside your editor on the right. Click a heading in the Table of Contents to jump to it, or use the toggle to collapse the ToC. Mermaid fenced blocks render inline with VS Code-aligned styling using the bundled Mermaid runtime.
 
 ## Settings
 

@@ -127,6 +127,9 @@ export class ReaderPanel implements vscode.Disposable {
     const cssUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "dist", "reader.css"),
     );
+    const mermaidUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "dist", "mermaid.min.js"),
+    );
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js"),
     );
@@ -135,7 +138,7 @@ export class ReaderPanel implements vscode.Disposable {
       `img-src ${webview.cspSource} https: http:`,
       `style-src ${webview.cspSource}`,
       `font-src ${webview.cspSource}`,
-      `script-src 'nonce-${nonce}' https://cdn.jsdelivr.net`,
+      `script-src 'nonce-${nonce}'`,
     ].join("; ");
 
     return `<!DOCTYPE html>
@@ -157,7 +160,7 @@ export class ReaderPanel implements vscode.Disposable {
     <div id="content" class="content"></div>
   </main>
 </div>
-<script nonce="${nonce}" src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script nonce="${nonce}" src="${mermaidUri}"></script>
 <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
